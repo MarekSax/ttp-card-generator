@@ -3,6 +3,7 @@ import styles from "./CardTemplate.module.scss";
 import jsPDF from "jspdf";
 import { useRef, useState } from "react";
 import html2canvas from "html2canvas";
+import { ImageCropper } from "./ImageCropper";
 
 interface CardStyles {
   [key: string]: React.CSSProperties;
@@ -150,6 +151,7 @@ const cardStyles: CardStyles = {
 };
 export const CardTemplate = () => {
   const templateRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     fullName: "Jan Kowalski",
     consultantName: "Anna Nowak",
@@ -157,15 +159,25 @@ export const CardTemplate = () => {
     familyPhone: "+48 987 654 321",
   });
   const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [croppedImage, setCroppedImage] = useState<string | null>(null);
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImageSrc(reader.result as string); // Set image URL as base64 string
+        setImageSrc(reader.result as string);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const resetImage = () => {
+    setImageSrc(null);
+    setCroppedImage(null);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -188,6 +200,13 @@ export const CardTemplate = () => {
   };
   return (
     <div className={styles.container}>
+      {imageSrc && (
+        <ImageCropper
+          image={imageSrc}
+          setImage={setCroppedImage}
+          reset={resetImage}
+        />
+      )}
       <div>
         <label htmlFor="name">Imię i nazwisko pacjenta:</label>
         <input
@@ -230,7 +249,8 @@ export const CardTemplate = () => {
           type="file"
           accept="image/*"
           id="image"
-          onChange={handleImageUpload}
+          onChange={onFileChange}
+          ref={fileInputRef}
         />
       </div>
       <div style={cardStyles.card} ref={templateRef}>
@@ -245,9 +265,9 @@ export const CardTemplate = () => {
             </h4>
           </div>
           <div style={cardStyles.photo}>
-            {imageSrc ? (
+            {croppedImage ? (
               <img
-                src={imageSrc}
+                src={croppedImage}
                 alt="User upload"
                 style={cardStyles.photoContent}
               />
