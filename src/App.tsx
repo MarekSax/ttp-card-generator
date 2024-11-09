@@ -1,7 +1,7 @@
-import { CardTemplate } from "./components/CardTemplate";
+import { CardTemplate } from './components/CardTemplate'
 
 function App() {
-  return <CardTemplate />;
+    return <CardTemplate />
 }
 
-export default App;
+export default App
